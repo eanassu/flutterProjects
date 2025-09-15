@@ -17,7 +17,7 @@ class SecondScreen extends StatelessWidget {
               'Você está na Segunda Tela!',
               style: TextStyle(fontSize: 20),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 90),
             ElevatedButton(
               onPressed: () {
                 // Volta para a tela anterior

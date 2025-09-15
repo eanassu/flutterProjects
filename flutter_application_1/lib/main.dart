@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'segunda_tela.dart';
+import 'package:flutter_application_1/tip_calculator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -115,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const SecondScreen(),
+                    builder: (context) => const TipCalculator(),
                   ),
                 );
               }, 
