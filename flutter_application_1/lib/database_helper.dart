@@ -1,18 +1,20 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_application_1/todo_model.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'funcionario.dart';
+import 'package:sqflite/sqflite.dart';
+
+// precisa rodar no terminal:
+// dart run sqflite_common_ffi_web:setup
+// para funcionar na WEB
 
 class DatabaseHelper {
-  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  static final DatabaseHelper _instance=DatabaseHelper._internal();
   static Database? _database;
   factory DatabaseHelper() {
     return _instance;
   }
   DatabaseHelper._internal();
-
   Future<Database> get database async {
     if(_database != null) {
       return _database!;
@@ -20,80 +22,89 @@ class DatabaseHelper {
     _database = await _initDatabase();
     return _database!;
   }
-
-  Future<Database> _initDatabase() async {
+  Future <Database> _initDatabase() async {
     String path;
     if(kIsWeb) {
-      path='func_app_web.db';
+      path = 'todo_app_web.db';
     } else {
       final documentsDirectory = await getApplicationDocumentsDirectory();
-      path = join(documentsDirectory.path,'func_app.db');
+      path = join(documentsDirectory.path,'todo_app.db');
     }
     return await openDatabase(
-      path, version:1, onCreate: _onCreate
+      path, 
+      version:1,
+      onCreate: _onCreate
     );
   }
-
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
-      CREATE TABLE FUNCIONARIOS(
-        RE INTEGER PRIMARY KEY AUTOINCREMENT,
-        NOME: TEXT,
-        SALARIO: DOUBLE      
+      CREATE TABLE todos(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        description TEXT,
+        isDone INTEGER
       )
     ''');
+
   }
-  // operações CRUD 
-  Future<int> insertFuncionario(Funcionario funcionario) async {
+  // Create (Inserir uma tarefa)
+  Future<int> insertTodo(Todo todo) async {
     final db = await database;
-    return await db.insert('FUNCIONARIOS', funcionario.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.insert('todos', todo.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<Funcionario>> getFuncionarios() async {
+  // Read (Obter todas as tarefas)
+  Future<List<Todo>> getTodos() async {
     final db = await database;
-    final List<Map<String,dynamic>> maps = await db.query('FUNCIONARIOS');
-    return List.generate(maps.length,(i) {
-      return Funcionario.fromMap(maps[i]);
+    final List<Map<String, dynamic>> maps = await db.query('todos');
+
+    return List.generate(maps.length, (i) {
+      return Todo.fromMap(maps[i]);
     });
   }
 
-  Future<Funcionario?> getFuncionarioByRe(int re) async {
+  // Read (Obter uma tarefa por ID) - Opcional, mas útil
+  Future<Todo?> getTodoById(int id) async {
     final db = await database;
-    final List<Map<String,dynamic>> maps = await db.query(
-      'FUNCIONARIOS',
-      where: 're = ?',
-      whereArgs: [re]);
+    final List<Map<String, dynamic>> maps = await db.query(
+      'todos',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (maps.isNotEmpty) {
-      return Funcionario.fromMap(maps.first);
+      return Todo.fromMap(maps.first);
     }
     return null;
   }
 
-  Future<int> updateFuncionario(Funcionario funcionario) async {
+  // Update (Atualizar uma tarefa)
+  Future<int> updateTodo(Todo todo) async {
     final db = await database;
     return await db.update(
-      'FUNCIONARIOS',
-      funcionario.toMap(),
-      where: 're = ?',
-      whereArgs: [funcionario.re]
+      'todos',
+      todo.toMap(),
+      where: 'id = ?',
+      whereArgs: [todo.id],
     );
   }
 
-  Future<int> deleteFuncionario(int re) async {
+  // Delete (Remover uma tarefa)
+  Future<int> deleteTodo(int id) async {
     final db = await database;
     return await db.delete(
-      'FUNCIONARIOS',
-      where: 're = ?',
-      whereArgs: [re]
+      'todos',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 
+  // Close database (Opcional, mas boa prática em alguns cenários)
   Future<void> close() async {
     final db = _database;
-    if(db != null && db.isOpen) {
+    if (db != null && db.isOpen) {
       await db.close();
-      _database = null;
+      _database = null; // Resetar a instância para reabrir se necessário
     }
   }
 }
