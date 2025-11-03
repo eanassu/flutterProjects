@@ -12,7 +12,7 @@ void main() {
 
     test('resultado incorreto', (){
       final calc = Calculadora();
-      expect(calc.multiplicar(1, 0),0);
+      expect(calc.multiplicar(1, 0),1);
     });
   });
 }
