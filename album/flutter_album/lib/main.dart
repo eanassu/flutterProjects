@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-Future<Album> fetchAlbum() async {
+Future<Album> fetchAlbum(String url) async {
   final response = await http.get(
-    Uri.parse('https://jsonplaceholder.typicode.com/albums/1'),
+    Uri.parse(url),
   );
 
   if (response.statusCode == 200) {
@@ -50,11 +50,21 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Future<Album> futureAlbum;
+  int _page = 1;
+
+  void _incrementPage() {
+    _page++;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    futureAlbum = fetchAlbum('https://jsonplaceholder.typicode.com/albums/$_page');
+  }
 
   @override
   void initState() {
     super.initState();
-    futureAlbum = fetchAlbum();
   }
 
   @override
@@ -79,8 +89,14 @@ class _MyAppState extends State<MyApp> {
               // By default, show a loading spinner.
               return const CircularProgressIndicator();
             },
+            
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+        onPressed: _incrementPage,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ),
       ),
     );
   }
